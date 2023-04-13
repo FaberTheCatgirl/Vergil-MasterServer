@@ -1,12 +1,16 @@
-# A sample master server implementation for ElDewrito
+<img src="https://avatars.githubusercontent.com/u/110360920?s=400&u=1fae8a416637b10b1e26ac093b8c9c98da3081d3&v=4" width="190" height="164" align="center"/>
 
-This implements all the features expected in an ElDewrito master server, in a stable, scalable, production-ready way.
+# A sample master server implementation for Vergil
 
-I mainly only call it a sample as others can use this to see how endpoints should function (in case they want to make their own their own master server implementation), and because this implementation hasn't really been tested out properly yet.
+This implements all the features expected in an Vergil master server, in a stable, scalable, production-ready way.
 
-However it should work fine with next to no changes needed, the master server I'll be operating will be running on the same code as this git, and the git will be kept up to date with any changes I make.
+We mainly only call it a sample as others can use this to see how endpoints should function (in case they want to make their own their own master server implementation), and because this implementation hasn't really been tested out properly yet.
+
+However it should work fine with next to no changes needed, the master server We'll be operating will be running on the same code as this git, and the git will be kept up to date with any changes we make.
 
 If you want to contribute to it feel free to make a pull request, however letting us know what you're working on first would be best, so that we can discuss it and try figuring out the best way to do it with you.
+
+![Screenshot](http://raw.github.com/FaberTheCatgirl/HaloShaderGenerator/master/doc/images/concept.jpg)
 
 ## Installation (with Docker and nginx)
 
@@ -47,7 +51,7 @@ You can edit various options in the config files inside each folder, node/index.
 
 You should set these config options before running "docker-compose up" for the first time, as changing things inside a Docker container can be troublesome.
 
-Note that ElDewrito is set up to re-announce to each master it knows about every 2.5 minutes, setting the serverContactTimeLimit to less than that will cause problems!
+Note that Vergil is set up to re-announce to each master it knows about every 2.5 minutes, setting the serverContactTimeLimit to less than that will cause problems!
 
 ## Credits
 
