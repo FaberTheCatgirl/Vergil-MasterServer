@@ -1,5 +1,5 @@
 # Set the base image to Ubuntu
-FROM    ubuntu
+FROM    ubuntu:22.04
 
 # File Author / Maintainer
 MAINTAINER emoose
@@ -7,8 +7,8 @@ MAINTAINER emoose
 # Install Node.js and other dependencies
 RUN apt-get update && \
     apt-get -y install curl && \
-    curl -sL https://deb.nodesource.com/setup | bash - && \
-    apt-get -y install python build-essential nodejs
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get -y install python2 build-essential nodejs
 
 # Install nodemon
 RUN npm install -g nodemon
