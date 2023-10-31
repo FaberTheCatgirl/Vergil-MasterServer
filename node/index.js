@@ -27,16 +27,28 @@ var appPortNumber = process.env.PORT || 8080;
 var isRunningStatsServer = false;
 
 // end of configurable options, only edit below if you know what you're doing!
-var express = require('express'),
-    http = require('http'),
-    request = require('request'),
-    redis = require('redis'),
-    async = require('async'),
-    bodyParser = require('body-parser'),
-    crypto = require('crypto');
 
-var app = express();
-var client = redis.createClient(redisPortNumber, redisHostName);
+import { default as express } from 'express'
+import { default as http } from 'http'
+import { default as request } from 'request'
+import { createClient } from 'redis'
+import { default as async } from 'async'
+import { default as bodyParser } from 'body-parser'
+import { default as crypto } from 'crypto'
+
+//var express = require('express'),
+//    http = require('http'),
+//    request = require('request'),
+//    redis = require('redis'),
+//    async = require('async'),
+//    bodyParser = require('body-parser'),
+//    crypto = require('crypto');
+
+const app = express()
+
+const client = await createClient({url: 'redis://redis:6379'})
+  .on('error', err => console.log('Redis Client Error', err))
+  .connect();
 
 function jsonGet(options, callback) {
     return request(options, function(error, response, body) {
@@ -119,8 +131,8 @@ app.get('/announce', function(req, res) {
     var uri = ip + ":" + serverPort;
 
     if (shutdown) { // server shutting down so delete its entries from redis
-        client.srem("servers", uri);
-        client.del(uri + ":info");
+        client.sRem("servers", uri);
+        client.Del(uri + ":info");
         console.log("Removed server", uri); //you wanted to actually log this, right?
         return res.send({
             result: {
@@ -166,10 +178,10 @@ app.get('/announce', function(req, res) {
         }
 
         // add ip to our servers set, if it already exists then it'll silently fail
-        client.sadd("servers", uri);
+        client.sAdd("servers", uri);
 
         // add/set the ip/port and current time to the db
-        client.hmset(uri + ":info", {
+        client.hMset(uri + ":info", {
             lastUpdate: Math.floor(Date.now() / 1000)
         });
 
@@ -224,7 +236,7 @@ app.get("/list", function(req, res) {
         }
     };
 
-    client.smembers("servers", function(err, result) {
+    client.sMembers("servers", function(err, result) {
         if (!result) {
             returnData.result.code = 1;
             returnData.result.msg = "Unable to query database";
@@ -232,7 +244,7 @@ app.get("/list", function(req, res) {
         }
 
         function isServerAvailable(uri, callback) {
-            client.hgetall(uri + ":info", function(err, obj) {
+            client.hGetAll(uri + ":info", function(err, obj) {
                 // can this be simplified? things i've read from ~2010 say this is the best way
                 if (err || typeof obj === undefined || !obj || typeof obj.lastUpdate === undefined || !obj.lastUpdate || obj.lastUpdate === 0) {
                     return callback(null, false);
@@ -392,3 +404,4 @@ app.post("/stats", jsonParser, function(req, res) {
 http.createServer(app).listen(appPortNumber, "0.0.0.0", function() {
     console.log('Listening on port ' + appPortNumber);
 });
+await client.quit();

@@ -5,6 +5,7 @@
   "main": "index.js",
   "author": "emoose",
   "license": "AGPL-3.0",
+  "type": "module",
   "repository": {
     "type" : "git",
     "url" : "https://gitlab.com/ElDewrito/ElDewrito-MasterServer.git"
