@@ -30,7 +30,7 @@ var isRunningStatsServer = false;
 
 import { default as express } from 'express'
 import { default as http } from 'http'
-import { default as request } from 'request'
+import { request } from 'undici'
 import { createClient } from 'redis'
 import { default as async } from 'async'
 import { default as bodyParser } from 'body-parser'
@@ -92,6 +92,22 @@ function jsonGet(options, callback) {
     }
   }
 */
+
+async function aStore(uri){
+        // add ip to our servers set, if it already exists then it'll silently fail
+        await client.sAdd("servers", uri);
+
+        // add/set the ip/port and current time to the db
+        await client.hMset(uri + ":info", {
+            lastUpdate: Math.floor(Date.now() / 1000)
+        });
+}
+
+async function aRemove(uri){
+    client.sRem("servers", uri);
+    client.Del(uri + ":info");
+}
+
 app.get('/announce', function(req, res) {
     var shutdown = req.query.shutdown === "true" || req.query.shutdown == 1;
 
@@ -131,8 +147,9 @@ app.get('/announce', function(req, res) {
     var uri = ip + ":" + serverPort;
 
     if (shutdown) { // server shutting down so delete its entries from redis
-        client.sRem("servers", uri);
-        client.Del(uri + ":info");
+        //client.sRem("servers", uri);
+        //client.Del(uri + ":info");
+        aRemove(uri);
         console.log("Removed server", uri); //you wanted to actually log this, right?
         return res.send({
             result: {
@@ -148,6 +165,7 @@ app.get('/announce', function(req, res) {
     }, function(json) {
         var isError = json.error !== undefined ? json.error === "true" : false;
         if (isError) {
+            console.log("Failed to retrieve server info JSON from ", uri);
             return res.send({
                 result: {
                     code: 2,
@@ -178,12 +196,13 @@ app.get('/announce', function(req, res) {
         }
 
         // add ip to our servers set, if it already exists then it'll silently fail
-        client.sAdd("servers", uri);
+        //client.sAdd("servers", uri);
 
         // add/set the ip/port and current time to the db
-        client.hMset(uri + ":info", {
-            lastUpdate: Math.floor(Date.now() / 1000)
-        });
+        //client.hMset(uri + ":info", {
+        //    lastUpdate: Math.floor(Date.now() / 1000)
+        //});
+        aStore(uri);
 
         res.send({
             result: {
@@ -220,6 +239,10 @@ app.get('/announce', function(req, res) {
     }
   }
 */
+
+async function aRetrieve(){
+
+}
 
 app.get("/list", function(req, res) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -404,4 +427,4 @@ app.post("/stats", jsonParser, function(req, res) {
 http.createServer(app).listen(appPortNumber, "0.0.0.0", function() {
     console.log('Listening on port ' + appPortNumber);
 });
-await client.quit();
+//await client.quit();
